@@ -11,21 +11,22 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  const { attacker, attackee } = JSON.parse(req.body)
-  // const challenge = await prisma.challenge.findUnique({
-  //   where: {id: attackee},
-  // })
-  // if (!challenge) {
-
-  console.log(req.body)
-  await prisma.challenge.create({
-    data: {
-      attackerHand: '01234',
-      wager: 2,
-      attackee: { connect: { address: attackee } },
-      attacker: { connect: { address: attacker } },
-    },
+  const { attacker, attackee, attackerHand, wager } = JSON.parse(req.body)
+  const existingChallenge = await prisma.challenge.findFirst({
+    where: { attackerId: attackee, attackeeId: attacker, winnerIndex: null },
   })
-  // }
+  const existingChallenge2 = await prisma.challenge.findFirst({
+    where: { attackerId: attacker, attackeeId: attackee, winnerIndex: null },
+  })
+  if (!existingChallenge && !existingChallenge2) {
+    await prisma.challenge.create({
+      data: {
+        attackerHand,
+        wager: +wager,
+        attackee: { connect: { address: attackee } },
+        attacker: { connect: { address: attacker } },
+      },
+    })
+  }
   res.status(200).json({ message: 'Success' })
 }

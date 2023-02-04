@@ -11,7 +11,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  await prisma.challenge.deleteMany()
-  await prisma.player.deleteMany()
+  const { id, attackeeHand } = JSON.parse(req.body)
+
+  if (attackeeHand) {
+    await prisma.challenge.update({
+      where: { id },
+      data: { attackeeHand, winnerIndex: 1 },
+    })
+  } else {
+    await prisma.challenge.delete({
+      where: { id },
+    })
+  }
   res.status(200).json({ message: 'Success' })
 }
