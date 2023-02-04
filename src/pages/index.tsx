@@ -1,6 +1,37 @@
 import Head from 'next/head'
+import { useEffect, useRef, useState } from 'react'
+import { Player, Challenge } from '@prisma/client'
+
+const formatAddress = (s: string) => `${s.slice(0, 6)}...${s.slice(-4)}`
 
 export default function Home() {
+  const [players, setPlayers] = useState<Player[]>([])
+  const [challenges, setChallenges] = useState<Challenge[]>([])
+  const [address, setAddress] = useLocalStorage<string>('name', '')
+
+  useEffect(() => {
+    if (!address) setAddress(generateId())
+  }, [address, setAddress])
+  const poll = async () => {
+    const result = await (await fetch('/api/poll')).json()
+    setPlayers(result.players)
+    setChallenges(result.challenges)
+  }
+  const attack = (attacker: string, attackee: string) => {
+    fetch('/api/attack', {
+      method: 'POST',
+      body: JSON.stringify({ attacker, attackee }),
+    })
+  }
+
+  // usePollingEffect(
+  //   poll,
+  //   [],
+  //   { interval: 3000, onCleanUp: () => {} },
+  // )
+
+  console.log(challenges)
+
   return (
     <>
       <Head>
@@ -10,8 +41,109 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <div></div>
+        <div className="flex flex-col max-w-sm mx-auto my-10 gap-4">
+          <input value={address} />
+
+          <div className="flex justify-evenly">
+            <button onClick={() => fetch('/api/ping?address=' + address)}>
+              ping
+            </button>
+
+            <button onClick={poll}>poll</button>
+
+            <button onClick={() => fetch('/api/purge')}>purge</button>
+          </div>
+
+          <p className="font-bold">Players</p>
+          <div className="flex flex-col gap-1">
+            {players.map((p: any) => (
+              <div className="flex justify-between" key={p.address}>
+                <p>
+                  {formatAddress(p.address)}:{' '}
+                  {Math.floor((Date.now() - +new Date(p.lastOnlineAt)) / 1000)}
+                </p>
+                <button onClick={() => attack(address, p.address)}>
+                  attack
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <p className="font-bold">Challenges</p>
+          <div className="flex flex-col gap-1">
+            {challenges.map((c) => (
+              <div className="flex justify-between" key={c.attackerId}>
+                <p>
+                  {formatAddress(c.attackerId)}: {c.attackerHand} v{' '}
+                  {c.attackeeHand} ({c.winnerIndex})
+                </p>
+                <div className="flex">
+                  <button>accept</button>
+                  <button>reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     </>
   )
+}
+
+function usePollingEffect(
+  asyncCallback: any,
+  dependencies = [],
+  { interval = 10_000, onCleanUp = () => {} } = {},
+) {
+  const timeoutIdRef = useRef<any>(null)
+  useEffect(() => {
+    let _stopped = false
+    ;(async function pollingCallback() {
+      try {
+        await asyncCallback()
+      } finally {
+        timeoutIdRef.current =
+          !_stopped && setTimeout(pollingCallback, interval)
+      }
+    })()
+    return () => {
+      _stopped = true
+      clearTimeout(timeoutIdRef.current)
+      onCleanUp?.()
+    }
+  }, [...dependencies, interval])
+}
+
+function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') {
+      return initialValue
+    }
+    try {
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch (error) {
+      console.log(error)
+      return initialValue
+    }
+  })
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value
+      setStoredValue(valueToStore)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore))
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  return [storedValue, setValue] as const
+}
+
+function generateId() {
+  var arr = new Uint8Array(40 / 2)
+  if (typeof window !== 'undefined') window.crypto.getRandomValues(arr)
+  return `0x${Array.from(arr, (d) => d.toString(16).padStart(2, '0')).join('')}`
 }
