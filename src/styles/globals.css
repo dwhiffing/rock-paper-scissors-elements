@@ -28,3 +28,6 @@ a {
 button {
   @apply bg-white text-black px-4 rounded-sm;
 }
+button:disabled {
+  @apply bg-gray-300 text-gray-400;
+}

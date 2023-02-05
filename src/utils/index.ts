@@ -1,4 +1,40 @@
+import { Player, Challenge } from '@prisma/client'
 import { useEffect, useRef, useState } from 'react'
+
+export const poll = async () =>
+  (await (await fetch('/api/poll')).json()) as {
+    players: Player[]
+    challenges: Challenge[]
+  }
+
+export const attack = (
+  attacker: string,
+  attackee: string,
+  attackerHand: number[],
+  wager: number,
+) =>
+  fetch('/api/attack', {
+    method: 'POST',
+    body: JSON.stringify({ attacker, attackee, wager, attackerHand }),
+  })
+
+export const respond = (id: number, hand?: number[]) =>
+  fetch('/api/respond', {
+    method: 'POST',
+    body: JSON.stringify({ id, attackeeHand: hand }),
+  })
+
+export const getChallengeExists = (
+  challenges: Challenge[] | undefined,
+  a: string,
+  b: string,
+) =>
+  challenges?.some((c) => {
+    if (typeof c.outcome === 'number') return false
+
+    const { attackerId: _a, attackeeId: _b } = c
+    return (_b === a && _a === b) || (_a === a && _b === b)
+  })
 
 export function generateId() {
   var arr = new Uint8Array(40 / 2)

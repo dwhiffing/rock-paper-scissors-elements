@@ -1,54 +1,29 @@
 import { useEffect, useState } from 'react'
-import { Player, Challenge } from '@prisma/client'
+import { Challenge } from '@prisma/client'
 import useSWR from 'swr'
 import { PlayerItem } from './PlayerItem'
 import { ChallengeItem } from './ChallengeItem'
 import { AttackModal } from './AttackModal'
-import { formatAddress, generateId, useLocalStorage } from '@/utils'
+import * as utils from '@/utils'
+import { HistoryItem } from './HistoryItem'
 
 export const App = () => {
   const [attackee, setAttackee] = useState('')
   const [isResponse, setIsResponse] = useState(0)
-  const [address, setAddress] = useLocalStorage<string>('address', '')
-
-  const fetcher = async () =>
-    (await (await fetch('/api/poll')).json()) as {
-      players: Player[]
-      challenges: Challenge[]
-    }
-
-  const { data, mutate: refetch } = useSWR('/api/poll', fetcher)
+  const [address, setAddress] = utils.useLocalStorage<string>('address', '')
+  const { data, mutate: refetch } = useSWR('/api/poll', utils.poll)
   const { players, challenges } = data || {}
+  const balance = players?.find((p) => p.address === address)?.balance || 0
 
   useEffect(() => {
-    if (!window.localStorage.getItem('address')) setAddress(generateId())
+    if (!window.localStorage.getItem('address')) setAddress(utils.generateId())
   }, [address, setAddress])
 
-  const attack = (hand: number[], wager: number) => {
-    fetch('/api/attack', {
-      method: 'POST',
-      body: JSON.stringify({
-        attacker: address,
-        attackee: attackee,
-        wager,
-        attackerHand: hand,
-      }),
-    }).then(() => refetch())
-  }
-  const respond = (id: number, hand?: number[]) => {
-    fetch('/api/respond', {
-      method: 'POST',
-      body: JSON.stringify({ id, attackeeHand: hand }),
-    }).then(() => refetch())
-  }
+  useEffect(() => {
+    if (address) fetch('/api/ping?address=' + address).then(() => refetch())
+  }, [address, refetch])
 
-  const getChallengeExists = (a: string, b: string) =>
-    challenges?.some(
-      (c) =>
-        typeof c.winnerIndex !== 'number' &&
-        ((c.attackeeId === a && c.attackerId === b) ||
-          (c.attackerId === a && c.attackeeId === b)),
-    )
+  // usePollingEffect(refetch, [], { interval: 3000 })
 
   const onAttack = (address: string) => {
     setIsResponse(0)
@@ -59,52 +34,54 @@ export const App = () => {
     setIsResponse(c.id)
     setAttackee(c.attackerId)
   }
-  const onReject = (c: Challenge) => respond(c.id)
-  // usePollingEffect(refetch, [], { interval: 3000 })
-  const otherPlayers = players?.filter((p) => p.address !== address) || []
-
-  const activeChallenges =
-    challenges
-      ?.filter((c) => typeof c.winnerIndex !== 'number')
-      ?.filter((c) => c.attackeeId === address) || []
-
-  const pastChallenges =
-    challenges
-      ?.filter((c) => c.attackeeId === address || c.attackerId === address)
-      ?.filter((c) => typeof c.winnerIndex === 'number') || []
 
   const onPurge = () => fetch('/api/purge').then(() => refetch())
+  const onReject = (c: Challenge) => utils.respond(c.id).then(() => refetch())
+
+  const otherPlayers = players?.filter((p) => p.address !== address) || []
+
+  const ourChallenges =
+    challenges?.filter(
+      (c) => c.attackeeId === address || c.attackerId === address,
+    ) || []
+
+  const activeChallenges = ourChallenges.filter(
+    (c) => typeof c.outcome !== 'number',
+  )
+
+  const pastChallenges = ourChallenges.filter(
+    (c) => typeof c.outcome === 'number',
+  )
 
   const onSubmitAttack = (hand: number[], wager: number) => {
     if (isResponse) {
-      respond(isResponse, hand)
+      utils.respond(isResponse, hand).then(() => refetch())
     } else {
-      attack(hand, wager)
+      utils.attack(address, attackee, hand, wager).then(() => refetch())
     }
     setAttackee('')
   }
 
-  useEffect(() => {
-    if (address) {
-      fetch('/api/ping?address=' + address).then(() => refetch())
-    }
-  }, [address, refetch])
-
   return (
     <div className="flex flex-col max-w-sm mx-auto my-10 gap-4">
-      <p>{address}</p>
-
-      <div className="flex justify-evenly">
-        <button onClick={() => refetch()}>poll</button>
-        <button onClick={onPurge}>purge</button>
+      <div className="flex justify-between">
+        <p>{utils.formatAddress(address)}</p>
+        <p>balance: {balance}</p>
       </div>
+
+      <div
+        className="fixed top-2 right-2 cursor-pointer bg-red-500 text-black rounded-full w-3 aspect-square flex justify-center items-center"
+        onClick={onPurge}
+      />
 
       <p className="font-bold">Players</p>
       <div className="flex flex-col gap-1">
         {otherPlayers.map((p) => (
           <PlayerItem
             key={p.address}
-            disabled={!!getChallengeExists(p.address, address)}
+            disabled={
+              !!utils.getChallengeExists(challenges, p.address, address)
+            }
             player={p}
             onClick={() => onAttack(p.address)}
           />
@@ -116,6 +93,8 @@ export const App = () => {
         {activeChallenges.map((c) => (
           <ChallengeItem
             challenge={c}
+            address={address}
+            balance={balance}
             key={c.id}
             onAccept={() => onAccept(c)}
             onReject={() => onReject(c)}
@@ -124,23 +103,14 @@ export const App = () => {
       </div>
 
       <p className="font-bold">History</p>
-      <div className="flex flex-col gap-1">
-        {pastChallenges.map((c) => (
-          <div className="flex flex-col" key={c.id}>
-            <p>
-              {formatAddress(c.attackerId)} vs. {formatAddress(c.attackeeId)} (
-              {c.wager})
-            </p>
-            <p>
-              {c.attackerHand} vs {c.attackeeHand}
-            </p>
-            <p>winnerIndex: {c.winnerIndex}</p>
-          </div>
+      <div className="flex flex-col gap-4">
+        {pastChallenges.map((challenge) => (
+          <HistoryItem key={challenge.id} challenge={challenge} />
         ))}
       </div>
 
       <AttackModal
-        balance={players?.find((p) => p.address === address)?.balance || 0}
+        balance={balance}
         onSubmit={onSubmitAttack}
         isResponse={!!isResponse}
         open={!!attackee}

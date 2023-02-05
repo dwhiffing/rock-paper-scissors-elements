@@ -13,12 +13,19 @@ export default async function handler(
 ) {
   const { attacker, attackee, attackerHand, wager } = JSON.parse(req.body)
   const existingChallenge = await prisma.challenge.findFirst({
-    where: { attackerId: attackee, attackeeId: attacker, winnerIndex: null },
+    where: { attackerId: attackee, attackeeId: attacker, outcome: null },
   })
   const existingChallenge2 = await prisma.challenge.findFirst({
-    where: { attackerId: attacker, attackeeId: attackee, winnerIndex: null },
+    where: { attackerId: attacker, attackeeId: attackee, outcome: null },
   })
   if (!existingChallenge && !existingChallenge2) {
+    const _attacker = await prisma.player.findUnique({
+      where: { address: attacker },
+    })
+    await prisma.player.update({
+      where: { address: attacker },
+      data: { balance: (_attacker?.balance || 0) - wager },
+    })
     await prisma.challenge.create({
       data: {
         attackerHand: attackerHand.join(','),
