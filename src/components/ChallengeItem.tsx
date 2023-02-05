@@ -9,10 +9,19 @@ export const ChallengeItem = (props: {
   onReject: () => void
 }) => (
   <div className="flex flex-col justify-between gap-4 border-gray-600 border-2 p-4 rounded-md">
-    <p>
-      {formatAddress(props.challenge.attackerId)}: {props.challenge.wager} (
-      {props.challenge.attackerHand}) ({props.challenge.outcome})
-    </p>
+    <div className="flex justify-between">
+      <p>
+        {formatAddress(
+          props.address === props.challenge.attackerId
+            ? props.challenge.attackeeId
+            : props.challenge.attackerId,
+        )}
+      </p>
+      {props.address === props.challenge.attackerId && (
+        <p>({props.challenge.attackerHand})</p>
+      )}
+      <p>wager: {props.challenge.wager}</p>
+    </div>
     <div className="flex gap-4">
       {props.address === props.challenge.attackeeId ? (
         <>

@@ -53,7 +53,7 @@ export default async function handler(
   if (outcome === 0) {
     attackeeBalance += challenge.wager
     attackerBalance += challenge.wager
-  } else if (outcome === 1) {
+  } else if (outcome > 0) {
     attackerBalance += challenge.wager * 2
   } else {
     attackeeBalance += challenge.wager * 2

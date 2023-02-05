@@ -11,8 +11,8 @@ export const PlayerItem = (props: {
     key={props.player.address}
   >
     <p>
-      {formatAddress(props.player.address)}:{' '}
-      {Math.floor((Date.now() - +new Date(props.player.lastOnlineAt)) / 1000)}
+      {formatAddress(props.player.address)}
+      {/* {Math.floor((Date.now() - +new Date(props.player.lastOnlineAt)) / 1000)} */}
     </p>
 
     <button disabled={props.disabled} onClick={props.onClick}>

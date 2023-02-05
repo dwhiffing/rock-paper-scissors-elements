@@ -40,10 +40,13 @@ export const App = () => {
 
   const otherPlayers = players?.filter((p) => p.address !== address) || []
 
-  const ourChallenges =
+  const ourChallenges = (
     challenges?.filter(
       (c) => c.attackeeId === address || c.attackerId === address,
     ) || []
+  ).sort((a, b) => {
+    return +new Date(b.updatedAt) - +new Date(a.updatedAt)
+  })
 
   const activeChallenges = ourChallenges.filter(
     (c) => typeof c.outcome !== 'number',
@@ -105,7 +108,11 @@ export const App = () => {
       <p className="font-bold">History</p>
       <div className="flex flex-col gap-4">
         {pastChallenges.map((challenge) => (
-          <HistoryItem key={challenge.id} challenge={challenge} />
+          <HistoryItem
+            key={challenge.id}
+            address={address}
+            challenge={challenge}
+          />
         ))}
       </div>
 
