@@ -21,7 +21,7 @@ export default async function handler(
   if (!existingChallenge && !existingChallenge2) {
     await prisma.challenge.create({
       data: {
-        attackerHand,
+        attackerHand: attackerHand.join(','),
         wager: +wager,
         attackee: { connect: { address: attackee } },
         attacker: { connect: { address: attacker } },

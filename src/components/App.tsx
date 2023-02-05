@@ -24,7 +24,7 @@ export const App = () => {
     if (!window.localStorage.getItem('address')) setAddress(generateId())
   }, [address, setAddress])
 
-  const attack = (hand: string, wager: string) => {
+  const attack = (hand: number[], wager: number) => {
     fetch('/api/attack', {
       method: 'POST',
       body: JSON.stringify({
@@ -35,10 +35,10 @@ export const App = () => {
       }),
     }).then(() => refetch())
   }
-  const respond = (id: number, attackeeHand?: string) => {
+  const respond = (id: number, hand?: number[]) => {
     fetch('/api/respond', {
       method: 'POST',
-      body: JSON.stringify({ id, attackeeHand }),
+      body: JSON.stringify({ id, attackeeHand: hand }),
     }).then(() => refetch())
   }
 
@@ -74,10 +74,8 @@ export const App = () => {
       ?.filter((c) => typeof c.winnerIndex === 'number') || []
 
   const onPurge = () => fetch('/api/purge').then(() => refetch())
-  const onPing = () =>
-    fetch('/api/ping?address=' + address).then(() => refetch())
 
-  const onSubmitAttack = (hand: string, wager: string) => {
+  const onSubmitAttack = (hand: number[], wager: number) => {
     if (isResponse) {
       respond(isResponse, hand)
     } else {
@@ -86,12 +84,17 @@ export const App = () => {
     setAttackee('')
   }
 
+  useEffect(() => {
+    if (address) {
+      fetch('/api/ping?address=' + address).then(() => refetch())
+    }
+  }, [address, refetch])
+
   return (
     <div className="flex flex-col max-w-sm mx-auto my-10 gap-4">
       <p>{address}</p>
 
       <div className="flex justify-evenly">
-        <button onClick={onPing}>ping</button>
         <button onClick={() => refetch()}>poll</button>
         <button onClick={onPurge}>purge</button>
       </div>
@@ -137,6 +140,7 @@ export const App = () => {
       </div>
 
       <AttackModal
+        balance={players?.find((p) => p.address === address)?.balance || 0}
         onSubmit={onSubmitAttack}
         isResponse={!!isResponse}
         open={!!attackee}
