@@ -1,5 +1,6 @@
 import { formatAddress } from '@/utils'
 import { Challenge } from '@prisma/client'
+import { Hand } from './Hand'
 
 export const ChallengeItem = (props: {
   balance: number
@@ -9,18 +10,18 @@ export const ChallengeItem = (props: {
   onReject: () => void
 }) => (
   <div className="flex flex-col justify-between gap-4 border-gray-600 border-2 p-4 rounded-md">
-    <div className="flex justify-between">
+    <div className="flex flex-col gap-y-2 justify-between">
       <p>
         {formatAddress(
           props.address === props.challenge.attackerId
             ? props.challenge.attackeeId
             : props.challenge.attackerId,
-        )}
+        )}{' '}
+        {props.challenge.wager}
       </p>
       {props.address === props.challenge.attackerId && (
-        <p>({props.challenge.attackerHand})</p>
+        <Hand hand={props.challenge.attackerHand} />
       )}
-      <p>wager: {props.challenge.wager}</p>
     </div>
     <div className="flex gap-4">
       {props.address === props.challenge.attackeeId ? (

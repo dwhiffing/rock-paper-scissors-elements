@@ -1,6 +1,5 @@
 import { Challenge } from '@prisma/client'
-import { formatAddress } from '@/utils'
-import { ICONS } from './Icons'
+import { Hand } from './Hand'
 
 export const HistoryItem = (props: {
   address: string
@@ -9,8 +8,6 @@ export const HistoryItem = (props: {
   const { outcome, attackeeId, attackerId, attackerHand, attackeeHand, wager } =
     props.challenge
 
-  const _attackeeHand = attackeeHand!.split(',').map(Number)
-  const _attackerHand = attackerHand.split(',').map(Number)
   const weWon =
     outcome !== 0 &&
     ((outcome! > 0 && props.address === attackerId) ||
@@ -35,7 +32,7 @@ export const HistoryItem = (props: {
           wager={wager}
           isDraw={outcome === 0}
           isOwner={attackerId === props.address}
-          hand={_attackerHand}
+          hand={attackerHand}
         />
         <Hand
           address={attackeeId}
@@ -43,58 +40,9 @@ export const HistoryItem = (props: {
           isWinner={outcome! < 0}
           wager={wager}
           isOwner={attackeeId === props.address}
-          hand={_attackeeHand}
+          hand={attackeeHand!}
         />
       </div>
     </div>
   )
 }
-
-const Hand = (props: any) => {
-  const className = props.isDraw
-    ? 'text-gray-500'
-    : props.isWinner
-    ? 'text-green-500'
-    : 'text-red-500'
-
-  return (
-    <div
-      className={`flex items-center gap-y-2 ${
-        props.flip ? 'flex-col-reverse' : 'flex-col'
-      }`}
-    >
-      <div className="flex flex-1 w-full h-12 justify-evenly">
-        {props.hand.map((c: any, i: number) => {
-          const Component = ICONS[+c]
-          return <Component width={50} height={50} key={i} />
-        })}
-      </div>
-
-      <span
-        className={[
-          props.isOwner ? 'font-extrabold' : 'font-extralight',
-          className,
-        ].join(' ')}
-      >
-        {formatAddress(props.address)} (
-        <span className={className}>
-          {props.isDraw ? '' : props.isWinner ? '+' : '-'}
-          {props.isDraw ? 0 : props.wager}
-        </span>
-        )
-      </span>
-    </div>
-  )
-}
-
-// const getClassName = (c: number, i: number, hand: number[]) => {
-//   const isWin = c === (hand[i] + 1) % 5 || c === (hand[i] + 2) % 5
-//   return [
-//     'font-extralight',
-//     c === hand[i]
-//       ? 'text-gray-500'
-//       : !isWin
-//       ? 'text-green-500'
-//       : 'text-red-500',
-//   ].join(' ')
-// }
