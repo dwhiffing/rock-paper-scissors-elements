@@ -22,7 +22,7 @@ export const App = () => {
     if (address) fetch('/api/ping?address=' + address).then(() => refetch())
   }, [address, refetch])
 
-  // usePollingEffect(refetch, [], { interval: 3000 })
+  utils.usePollingEffect(refetch, [], { interval: 3000 })
 
   const onAttack = (address: string) => {
     setIsResponse(0)
