@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Input from './Input'
 import { Modal } from './Modal'
 
 export const AttackModal = (props: {
@@ -8,58 +9,42 @@ export const AttackModal = (props: {
   onClose: () => void
   onSubmit: (hand: number[], wager: number) => void
 }) => {
-  const [hand, setHand] = useState([0, 0, 0, 0, 0])
+  const [hand, setHand] = useState([-1, -1, -1, -1, -1])
   const [wager, setWager] = useState(1)
   if (!props.open) return null
 
   return (
     <Modal onClose={props.onClose}>
-      <div className="flex flex-col gap-4">
-        {!props.isResponse && (
-          <input
-            autoFocus
-            onChange={(e) =>
-              setWager(Math.min(props.balance, Math.max(1, +e.target.value)))
-            }
-            value={wager}
-            placeholder="wager"
-            type="number"
-          />
-        )}
-        <div className="flex justify-between gap-x-2">
-          {new Array(5).fill('').map((_, i) => (
-            <select
-              onChange={(e) =>
-                setHand((h) =>
-                  h.map((_h, _i) => (i === _i ? +e.target.value : _h)),
-                )
-              }
-              value={hand[i]}
-              className="flex-1"
-              key={i}
-            >
-              {new Array(5).fill('').map((_, i) => (
-                <option key={i}>{i}</option>
-              ))}
-            </select>
-          ))}
-        </div>
+      <div className="flex flex-col gap-6 m-4">
+        <Input
+          value={hand}
+          onSubmit={() => props.onSubmit(hand, wager)}
+          onChange={setHand}
+        />
 
         <div className="flex gap-x-4">
+          {!props.isResponse && (
+            <div className="flex flex-1 items-center gap-x-6">
+              <span>Wager</span>
+              <input
+                autoFocus
+                className="py-1 px-2 w-24"
+                onChange={(e) =>
+                  setWager(
+                    Math.min(props.balance, Math.max(1, +e.target.value)),
+                  )
+                }
+                value={wager}
+                placeholder="wager"
+                type="number"
+              />
+            </div>
+          )}
           <button
             className="flex-1"
             onClick={() => props.onSubmit(hand, wager)}
           >
             Submit
-          </button>
-          <button
-            className="flex-1"
-            onClick={() => {
-              setWager(1)
-              setHand([0, 0, 0, 0, 0])
-            }}
-          >
-            Reset
           </button>
         </div>
       </div>

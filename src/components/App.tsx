@@ -65,7 +65,7 @@ export const App = () => {
   }
 
   return (
-    <div className="flex flex-col max-w-sm mx-auto my-10 gap-4">
+    <div className="flex flex-col max-w-sm mx-auto my-10 gap-4 px-4">
       <div className="flex items-center justify-between">
         <ConnectKitButton />
         <p>balance: {balance}</p>

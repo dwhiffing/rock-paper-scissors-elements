@@ -1,11 +1,17 @@
 interface IconProps {
-  width?: number
-  height?: number
+  className?: string
+  width?: number | string
+  height?: number | string
 }
-export const FireIcon = ({ width = 150, height = 150 }: IconProps) => (
+export const FireIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
   <svg
     width={width}
     height={height}
+    className={className}
     viewBox="0 0 500 500"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -50,10 +56,15 @@ export const FireIcon = ({ width = 150, height = 150 }: IconProps) => (
   </svg>
 )
 
-export const MetalIcon = ({ width = 150, height = 150 }: IconProps) => (
+export const MetalIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
   <svg
     width={width}
     height={height}
+    className={className}
     viewBox="0 0 500 500"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -107,10 +118,15 @@ export const MetalIcon = ({ width = 150, height = 150 }: IconProps) => (
   </svg>
 )
 
-export const PlantIcon = ({ width = 150, height = 150 }: IconProps) => (
+export const PlantIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
   <svg
     width={width}
     height={height}
+    className={className}
     viewBox="0 0 500 500"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -155,10 +171,15 @@ export const PlantIcon = ({ width = 150, height = 150 }: IconProps) => (
   </svg>
 )
 
-export const GroundIcon = ({ width = 150, height = 150 }: IconProps) => (
+export const GroundIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
   <svg
     width={width}
     height={height}
+    className={className}
     viewBox="0 0 500 500"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -210,10 +231,15 @@ export const GroundIcon = ({ width = 150, height = 150 }: IconProps) => (
     </defs>
   </svg>
 )
-export const WaterIcon = ({ width = 150, height = 150 }: IconProps) => (
+export const WaterIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
   <svg
     width={width}
     height={height}
+    className={className}
     viewBox="0 0 500 500"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -267,5 +293,22 @@ export const Icons = () => (
     <WaterIcon />
   </div>
 )
+
+export const Icon = (props: {
+  value: number
+  className?: string
+  width?: number | string
+  height?: number | string
+}) => {
+  const Component = ICONS[props.value]
+  if (!Component) return null
+  return (
+    <Component
+      className={props.className}
+      width={props.width}
+      height={props.height}
+    />
+  )
+}
 
 export const ICONS = [FireIcon, MetalIcon, PlantIcon, GroundIcon, WaterIcon]
