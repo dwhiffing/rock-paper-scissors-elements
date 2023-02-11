@@ -6,18 +6,17 @@ import { ChallengeItem } from './ChallengeItem'
 import { AttackModal } from './AttackModal'
 import * as utils from '@/utils'
 import { HistoryItem } from './HistoryItem'
+import { useAccount } from 'wagmi'
+import { ConnectKitButton } from 'connectkit'
 
 export const App = () => {
   const [attackee, setAttackee] = useState('')
   const [isResponse, setIsResponse] = useState(0)
-  const [address, setAddress] = utils.useLocalStorage<string>('address', '')
+  const { address: _address } = useAccount()
+  const address = _address || ''
   const { data, mutate: refetch } = useSWR('/api/poll', utils.poll)
   const { players, challenges } = data || {}
   const balance = players?.find((p) => p.address === address)?.balance || 0
-
-  useEffect(() => {
-    if (!window.localStorage.getItem('address')) setAddress(utils.generateId())
-  }, [address, setAddress])
 
   useEffect(() => {
     if (address) fetch('/api/ping?address=' + address).then(() => refetch())
@@ -67,8 +66,8 @@ export const App = () => {
 
   return (
     <div className="flex flex-col max-w-sm mx-auto my-10 gap-4">
-      <div className="flex justify-between">
-        <p>{utils.formatAddress(address)}</p>
+      <div className="flex items-center justify-between">
+        <ConnectKitButton />
         <p>balance: {balance}</p>
       </div>
 

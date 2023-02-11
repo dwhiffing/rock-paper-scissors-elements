@@ -1,5 +1,10 @@
 import Head from 'next/head'
-import { App } from '../components/App'
+import dynamic from 'next/dynamic'
+
+// @ts-ignore
+const App = dynamic(() => import('../components/App').then((mod) => mod.App), {
+  ssr: false,
+})
 
 export default function Home() {
   return (
