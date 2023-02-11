@@ -3,16 +3,22 @@ import { ICONS } from './Icons'
 
 export const Hand = (props: {
   hand: string
+  otherHand?: string
   address?: string
   flip?: boolean
   isOwner?: boolean
-  isWinner?: boolean
-  isDraw?: boolean
+  outcome?: number
   wager?: number
 }) => {
-  const className = props.isDraw
+  const isWinner = props.outcome
+    ? props.flip
+      ? props.outcome > 0
+      : props.outcome < 0
+    : false
+  const isDraw = props.outcome === 0
+  const className = isDraw
     ? 'text-gray-500'
-    : props.isWinner
+    : isWinner
     ? 'text-green-500'
     : 'text-red-500'
 
@@ -23,9 +29,21 @@ export const Hand = (props: {
       }`}
     >
       <div className="flex flex-1 w-full h-12 justify-evenly">
-        {props.hand?.split(',').map((c: any, i: number) => {
+        {props.hand.split(',').map((c: any, i: number) => {
           const Component = ICONS[+c]
-          return <Component width={50} height={50} key={i} />
+          const outcome = props.otherHand
+            ? getOutcome(+c, +props.otherHand.split(',')[i])
+            : null
+          return (
+            <Component
+              className={
+                outcome === 2 ? 'opacity-30' : outcome === 1 ? '' : 'opacity-50'
+              }
+              width={50}
+              height={50}
+              key={i}
+            />
+          )
         })}
       </div>
 
@@ -39,12 +57,17 @@ export const Hand = (props: {
           {formatAddress(props.address)}{' '}
           {props.wager ? (
             <span className={className}>
-              {props.isDraw ? '' : props.isWinner ? '+' : '-'}
-              {props.isDraw ? 0 : props.wager}
+              {isDraw ? '' : isWinner ? '+' : '-'}
+              {isDraw ? 0 : props.wager}
             </span>
           ) : null}
         </span>
       )}
     </div>
   )
+}
+
+const getOutcome = (a: number, b: number) => {
+  const isLoss = a === (b + 1) % 5 || a === (b + 2) % 5
+  return a === b ? 2 : isLoss ? 0 : 1
 }

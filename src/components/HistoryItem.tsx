@@ -28,19 +28,20 @@ export const HistoryItem = (props: {
         <Hand
           flip
           address={attackerId}
-          isWinner={outcome! > 0}
           wager={wager}
-          isDraw={outcome === 0}
-          isOwner={attackerId === props.address}
           hand={attackerHand}
+          otherHand={attackeeHand!}
+          outcome={typeof outcome === 'number' ? outcome : 0}
+          isOwner={attackerId === props.address}
         />
         <Hand
+          flip={false}
           address={attackeeId}
-          isDraw={outcome === 0}
-          isWinner={outcome! < 0}
           wager={wager}
-          isOwner={attackeeId === props.address}
           hand={attackeeHand!}
+          otherHand={attackerHand}
+          outcome={typeof outcome === 'number' ? outcome : 0}
+          isOwner={attackeeId === props.address}
         />
       </div>
     </div>
