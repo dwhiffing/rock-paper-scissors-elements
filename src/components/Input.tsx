@@ -16,7 +16,10 @@ const Input = ({ value, onChange, onSubmit }: Props) => {
   }, [])
 
   const sendResult = () => {
-    const res = inputsRef.current.map((input) => input.value).map((n) => +n - 1)
+    const res = inputsRef.current
+      .map((input, i) => input.value || value[i] + 1)
+      .map((n) => +n - 1)
+
     onChange && onChange(res)
   }
 

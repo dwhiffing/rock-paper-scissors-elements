@@ -2,6 +2,8 @@ import { useState } from 'react'
 import Input from './Input'
 import { Modal } from './Modal'
 
+const random = () => Math.floor(Math.random() * 5)
+
 export const AttackModal = (props: {
   balance: number
   isResponse: boolean
@@ -9,7 +11,13 @@ export const AttackModal = (props: {
   onClose: () => void
   onSubmit: (hand: number[], wager: number) => void
 }) => {
-  const [hand, setHand] = useState([-1, -1, -1, -1, -1])
+  const [hand, setHand] = useState([
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+  ])
   const [wager, setWager] = useState(1)
   if (!props.open) return null
 
