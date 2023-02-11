@@ -28,6 +28,7 @@ model Challenge {
   wager        Int
   attackeeHand String?
   outcome      Int?
+  reveal       Int?
 
   attacker Player @relation("attacker", fields: [attackerId], references: [address])
   attackee Player @relation("attackee", fields: [attackeeId], references: [address])

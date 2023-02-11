@@ -25,24 +25,30 @@ export const HistoryItem = (props: {
       className={`flex flex-col font-mono text-xs border-2 p-4 rounded-md ${borderClassName}`}
     >
       <div className="flex flex-col justify-between font-sans text-base gap-y-6">
-        <Hand
-          flip
-          address={attackerId}
-          wager={wager}
-          hand={attackerHand}
-          otherHand={attackeeHand!}
-          outcome={typeof outcome === 'number' ? outcome : 0}
-          isOwner={attackerId === props.address}
-        />
-        <Hand
-          flip={false}
-          address={attackeeId}
-          wager={wager}
-          hand={attackeeHand!}
-          otherHand={attackerHand}
-          outcome={typeof outcome === 'number' ? outcome : 0}
-          isOwner={attackeeId === props.address}
-        />
+        {(props.address === attackerId || props.challenge.reveal === 1) && (
+          <Hand
+            flip
+            address={attackerId}
+            wager={wager}
+            hand={attackerHand}
+            otherHand={attackeeHand!}
+            outcome={typeof outcome === 'number' ? outcome : 0}
+            isOwner={attackerId === props.address}
+          />
+        )}
+        {(props.address === attackeeId ||
+          props.address === attackerId ||
+          props.challenge.reveal === 1) && (
+          <Hand
+            flip={false}
+            address={attackeeId}
+            wager={wager}
+            hand={attackeeHand!}
+            otherHand={attackerHand}
+            outcome={typeof outcome === 'number' ? outcome : 0}
+            isOwner={attackeeId === props.address}
+          />
+        )}
       </div>
     </div>
   )

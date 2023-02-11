@@ -29,7 +29,7 @@ export const Hand = (props: {
       }`}
     >
       <div className="flex flex-1 w-full h-12 justify-evenly">
-        {props.hand.split(',').map((c: any, i: number) => {
+        {props.hand?.split(',').map((c: any, i: number) => {
           const Component = ICONS[+c]
           const outcome = props.otherHand
             ? getOutcome(+c, +props.otherHand.split(',')[i])

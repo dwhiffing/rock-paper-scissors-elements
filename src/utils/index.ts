@@ -18,6 +18,12 @@ export const attack = (
     body: JSON.stringify({ attacker, attackee, wager, attackerHand }),
   })
 
+export const reveal = (id: number, reveal: number) =>
+  fetch('/api/reveal', {
+    method: 'POST',
+    body: JSON.stringify({ id, reveal }),
+  })
+
 export const respond = (id: number, hand?: number[]) =>
   fetch('/api/respond', {
     method: 'POST',
