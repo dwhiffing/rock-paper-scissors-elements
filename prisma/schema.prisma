@@ -19,16 +19,18 @@ model Player {
 }
 
 model Challenge {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  attackerId   String
-  attackeeId   String
-  attackerHand String
-  wager        Int
-  attackeeHand String?
-  outcome      Int?
-  reveal       Int?
+  id                    Int       @id @default(autoincrement())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  attackerId            String
+  attackeeId            String
+  attackerHand          String
+  wager                 Int
+  attackerSeenOutcomeAt DateTime?
+  attackeeSeenOutcomeAt DateTime?
+  attackeeHand          String?
+  outcome               Int?
+  reveal                Int?
 
   attacker Player @relation("attacker", fields: [attackerId], references: [address])
   attackee Player @relation("attackee", fields: [attackeeId], references: [address])

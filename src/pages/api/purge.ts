@@ -1,17 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-type Data = {
-  message: string
-}
+import { purge } from '@/utils/db'
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>,
+  res: NextApiResponse<{ message: string }>,
 ) {
-  await prisma.challenge.deleteMany()
-  await prisma.player.deleteMany()
+  await purge()
+
   res.status(200).json({ message: 'Success' })
 }

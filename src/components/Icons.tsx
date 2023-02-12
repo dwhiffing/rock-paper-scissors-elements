@@ -299,6 +299,51 @@ export const WaterIcon = ({
     </defs>
   </svg>
 )
+export const BlankIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
+  <svg
+    width={width}
+    height={height}
+    className={className}
+    viewBox="0 0 500 500"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g clipPath="url(#clip0_8_2)">
+      <circle cx="250" cy="250" r="250" fill="url(#paint0_radial_8_2)" />
+      <circle
+        cx="250"
+        cy="250"
+        r="250"
+        fill="black"
+        fillOpacity="0.08"
+        style={{ mixBlendMode: 'color' }}
+      />
+    </g>
+    <defs>
+      <radialGradient
+        id="paint0_radial_8_2"
+        cx="0"
+        cy="0"
+        r="1"
+        gradientUnits="userSpaceOnUse"
+        gradientTransform="translate(385 145) rotate(136.494) scale(406.725)"
+      >
+        <stop stopColor="white" />
+        <stop offset="0.0729167" stopColor="#B9B9B9" />
+        <stop offset="0.552083" stopColor="#6A6A6A" />
+        <stop offset="0.859375" stopColor="#474747" />
+        <stop offset="1" stopColor="#707070" />
+      </radialGradient>
+      <clipPath id="clip0_8_2">
+        <rect width="500" height="500" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+)
 
 export const Icons = () => (
   <div className="flex gap-x-4">

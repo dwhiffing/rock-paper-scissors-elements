@@ -1,9 +1,9 @@
 import { Challenge } from '@prisma/client'
 import { formatAddress } from '@/utils'
 import { useAccount } from 'wagmi'
-import { ICONS } from './Icons'
+import { BlankIcon, ICONS } from './Icons'
 
-export const ActiveChallengeItem = (props: {
+interface Props {
   balance: number
   address: string
   challenge: Challenge
@@ -12,61 +12,17 @@ export const ActiveChallengeItem = (props: {
   onShow: () => void
   onReveal: () => void
   onReject: () => void
-}) => (
+}
+
+export const ActiveChallengeItem = (props: Props) => (
   <div className="flex flex-col justify-between gap-4 border-gray-600 border-2 p-4 rounded-md">
     <div className="flex flex-col gap-y-6 justify-between">
-      <div className="flex justify-between">
-        <p>
-          {formatAddress(
-            props.address === props.challenge.attackerId
-              ? props.challenge.attackeeId
-              : props.challenge.attackerId,
-          )}
-        </p>
-        <p>wager: {props.challenge.wager}</p>
-      </div>
-      {props.challenge.attackerSeenOutcomeAt && (
-        <ChallengeItem address={props.address} challenge={props.challenge} />
-      )}
+      <p className="text-center">wager: {props.challenge.wager}</p>
+
+      <ChallengeItem address={props.address} challenge={props.challenge} />
     </div>
 
-    <div className="flex gap-4">
-      {typeof props.challenge.outcome !== 'number' ? (
-        props.address === props.challenge.attackeeId ? (
-          <>
-            <button
-              className="flex-1"
-              disabled={props.balance < props.challenge.wager}
-              onClick={props.onAccept}
-            >
-              accept
-            </button>
-            <button className="flex-1" onClick={props.onReject}>
-              reject
-            </button>
-          </>
-        ) : (
-          <button className="flex-1" onClick={props.onReject}>
-            cancel
-          </button>
-        )
-      ) : props.challenge.attackerSeenOutcomeAt ? (
-        props.address !== props.challenge.attackeeId ? (
-          <>
-            <button className="flex-1" onClick={props.onHide}>
-              hide
-            </button>
-            <button className="flex-1" onClick={props.onShow}>
-              show
-            </button>
-          </>
-        ) : null
-      ) : props.address !== props.challenge.attackeeId ? (
-        <button onClick={props.onReveal}>Reveal</button>
-      ) : (
-        <span>waiting for response</span>
-      )}
-    </div>
+    <ChallengeActions {...props} />
   </div>
 )
 
@@ -101,6 +57,55 @@ export const PastChallengeItem = ({
   )
 }
 
+const ChallengeActions = (props: Props) => {
+  const { address, balance, onAccept, onReject, onHide, onReveal, onShow } =
+    props
+  const {
+    attackerId,
+    attackeeId,
+    wager,
+    outcome,
+    reveal,
+    attackerSeenOutcomeAt,
+  } = props.challenge
+
+  const canAfford = balance >= wager
+
+  return (
+    <div className="flex gap-4">
+      {typeof outcome !== 'number' ? (
+        address === attackeeId ? (
+          <>
+            <button disabled={!canAfford} onClick={onAccept}>
+              accept
+            </button>
+            <button onClick={onReject}>reject</button>
+          </>
+        ) : (
+          <button onClick={onReject}>cancel</button>
+        )
+      ) : attackerSeenOutcomeAt ? (
+        address === attackerId ? (
+          typeof reveal !== 'number' ? (
+            <>
+              <button onClick={onHide}>hide</button>
+              <button onClick={onShow}>show</button>
+            </>
+          ) : (
+            <span>waiting for response</span>
+          )
+        ) : typeof reveal !== 'number' ? null : (
+          <button onClick={onReveal}>Reveal</button>
+        )
+      ) : address === attackerId ? (
+        <button onClick={onReveal}>Reveal</button>
+      ) : (
+        <span>waiting for response</span>
+      )}
+    </div>
+  )
+}
+
 const ChallengeItem = ({
   address,
   challenge,
@@ -108,8 +113,20 @@ const ChallengeItem = ({
   address: string
   challenge: Challenge
 }) => {
-  const { outcome, attackeeId, attackerId, attackerHand, attackeeHand, wager } =
-    challenge
+  const {
+    outcome,
+    attackeeId,
+    attackerId,
+    attackerHand,
+    attackeeHand,
+    wager,
+    attackerSeenOutcomeAt,
+    attackeeSeenOutcomeAt,
+  } = challenge
+
+  const isFinished =
+    typeof outcome === 'number' &&
+    !!(address === attackerId ? attackerSeenOutcomeAt : attackeeSeenOutcomeAt)
 
   return (
     <div
@@ -117,36 +134,41 @@ const ChallengeItem = ({
         attackerId === address ? 'flex-col-reverse' : 'flex-col'
       } justify-between font-sans text-base gap-y-6`}
     >
-      {(address === attackerId || challenge.reveal === 1) && (
-        <Hand
-          className={attackerId !== address ? 'flex-col-reverse' : 'flex-col'}
-          address={attackerId}
-          wager={wager}
-          hand={attackerHand}
-          otherHand={attackeeHand!}
-          isWinner={outcome! > 0}
-          isDraw={outcome! === 0}
-        />
-      )}
-      {(address === attackeeId ||
-        address === attackerId ||
-        challenge.reveal === 1) && (
-        <Hand
-          className={attackerId === address ? 'flex-col-reverse' : 'flex-col'}
-          address={attackeeId}
-          wager={wager}
-          hand={attackeeHand!}
-          otherHand={attackerHand}
-          isWinner={outcome! < 0}
-          isDraw={outcome! === 0}
-        />
-      )}
+      <Hand
+        className={attackerId !== address ? 'flex-col-reverse' : 'flex-col'}
+        address={attackerId}
+        wager={isFinished ? wager : undefined}
+        hidden={
+          address !== attackerId &&
+          address === attackeeId &&
+          (!attackeeSeenOutcomeAt || challenge.reveal !== 1)
+        }
+        showOutcome={isFinished}
+        hand={attackerHand}
+        otherHand={attackeeHand!}
+        isWinner={outcome! > 0}
+        isDraw={outcome! === 0}
+      />
+
+      <Hand
+        className={attackerId === address ? 'flex-col-reverse' : 'flex-col'}
+        address={attackeeId}
+        hidden={address !== attackeeId && !attackerSeenOutcomeAt}
+        showOutcome={isFinished}
+        wager={isFinished ? wager : undefined}
+        hand={attackeeHand || '-1,-1,-1,-1,-1'}
+        otherHand={attackerHand}
+        isWinner={outcome! < 0}
+        isDraw={outcome! === 0}
+      />
     </div>
   )
 }
 
 const Hand = (props: {
   hand: string
+  hidden?: boolean
+  showOutcome?: boolean
   className?: string
   otherHand?: string
   address?: string
@@ -155,29 +177,29 @@ const Hand = (props: {
   wager?: number
 }) => {
   const { address: _address } = useAccount()
-  const className = props.isDraw
-    ? 'text-gray-500'
-    : props.isWinner
-    ? 'text-green-500'
-    : 'text-red-500'
+  const className = props.wager
+    ? props.isDraw
+      ? 'text-gray-500'
+      : props.isWinner
+      ? 'text-green-500'
+      : 'text-red-500'
+    : ''
 
   return (
     <div className={`flex items-center gap-y-2 ${props.className}`}>
       <div className="flex flex-1 w-full h-12 justify-evenly">
         {props.hand?.split(',').map((c: any, i: number) => {
-          const Component = ICONS[+c]
+          const Component = props.hidden ? BlankIcon : ICONS[+c] || BlankIcon
           const outcome = props.otherHand
             ? getOutcome(+c, +props.otherHand.split(',')[i])
             : null
+
+          let className = outcome === 1 && c !== '-1' ? '' : 'opacity-50'
+
+          if (props.hidden || !props.showOutcome) className = 'opacity-50'
+
           return (
-            <Component
-              className={
-                outcome === 2 ? 'opacity-30' : outcome === 1 ? '' : 'opacity-50'
-              }
-              width={50}
-              height={50}
-              key={i}
-            />
+            <Component className={className} width={50} height={50} key={i} />
           )
         })}
       </div>
