@@ -87,55 +87,59 @@ export const App = () => {
         onClick={onPurge}
       />
 
-      <p className="font-bold">Players</p>
-      <div className="flex flex-col gap-1">
-        {otherPlayers.map((p) => (
-          <PlayerItem
-            key={p.address}
-            disabled={
-              !!utils.getChallengeExists(challenges, p.address, address)
-            }
-            player={p}
-            onClick={() => onAttack(p.address)}
-          />
-        ))}
-      </div>
+      {address && (
+        <>
+          <p className="font-bold">Players</p>
+          <div className="flex flex-col gap-1">
+            {otherPlayers.map((p) => (
+              <PlayerItem
+                key={p.address}
+                disabled={
+                  !!utils.getChallengeExists(challenges, p.address, address)
+                }
+                player={p}
+                onClick={() => onAttack(p.address)}
+              />
+            ))}
+          </div>
 
-      <p className="font-bold">Challenges</p>
-      <div className="flex flex-col gap-1">
-        {activeChallenges.map((c) => (
-          <ActiveChallengeItem
-            challenge={c}
-            address={address}
+          <p className="font-bold">Challenges</p>
+          <div className="flex flex-col gap-1">
+            {activeChallenges.map((c) => (
+              <ActiveChallengeItem
+                challenge={c}
+                address={address}
+                balance={balance}
+                key={c.id}
+                onAccept={() => onAccept(c)}
+                onFold={() => onFold(c)}
+                onReveal={() => onReveal(c)}
+                onReject={() => onReject(c)}
+                onView={() => onView(c)}
+              />
+            ))}
+          </div>
+
+          <p className="font-bold">History</p>
+          <div className="flex flex-col gap-4">
+            {pastChallenges.map((challenge) => (
+              <PastChallengeItem
+                key={challenge.id}
+                address={address}
+                challenge={challenge}
+              />
+            ))}
+          </div>
+
+          <AttackModal
             balance={balance}
-            key={c.id}
-            onAccept={() => onAccept(c)}
-            onFold={() => onFold(c)}
-            onReveal={() => onReveal(c)}
-            onReject={() => onReject(c)}
-            onView={() => onView(c)}
+            onSubmit={onSubmitAttack}
+            isResponse={!!isResponse}
+            open={!!attackee}
+            onClose={() => setAttackee('')}
           />
-        ))}
-      </div>
-
-      <p className="font-bold">History</p>
-      <div className="flex flex-col gap-4">
-        {pastChallenges.map((challenge) => (
-          <PastChallengeItem
-            key={challenge.id}
-            address={address}
-            challenge={challenge}
-          />
-        ))}
-      </div>
-
-      <AttackModal
-        balance={balance}
-        onSubmit={onSubmitAttack}
-        isResponse={!!isResponse}
-        open={!!attackee}
-        onClose={() => setAttackee('')}
-      />
+        </>
+      )}
     </div>
   )
 }
