@@ -147,7 +147,9 @@ const ChallengeItem = ({
       <Hand
         className={attackerId === address ? 'flex-col-reverse' : 'flex-col'}
         address={attackeeId}
-        hidden={address !== attackeeId && !attackerSeenOutcomeAt}
+        hidden={
+          address !== attackeeId && !attackerSeenOutcomeAt && !!attackeeHand
+        }
         showOutcome={isFinished}
         wager={wager}
         hand={attackeeHand || '-1,-1,-1,-1,-1'}
@@ -193,7 +195,14 @@ const Hand = (props: {
           if (props.hidden || !props.showOutcome) className = 'opacity-50'
 
           return (
-            <Component className={className} width={50} height={50} key={i} />
+            <Component
+              className={`${
+                Component === BlankIcon && !props.hidden ? 'pulse' : ''
+              } ${className}`}
+              width={50}
+              height={50}
+              key={i}
+            />
           )
         })}
       </div>

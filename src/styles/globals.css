@@ -31,3 +31,17 @@ button {
 button:disabled {
   @apply bg-gray-400 text-gray-500;
 }
+
+@keyframes pulse {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 0.2;
+  }
+}
+
+.pulse {
+  animation: pulse 750ms infinite alternate;
+  animation-timing-function: ease-in-out;
+}
