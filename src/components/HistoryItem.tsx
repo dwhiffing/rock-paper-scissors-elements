@@ -1,17 +1,20 @@
 import { Challenge } from '@prisma/client'
 import { Hand } from './Hand'
 
-export const HistoryItem = (props: {
+export const HistoryItem = ({
+  address,
+  challenge,
+}: {
   address: string
   challenge: Challenge
 }) => {
   const { outcome, attackeeId, attackerId, attackerHand, attackeeHand, wager } =
-    props.challenge
+    challenge
 
   const weWon =
     outcome !== 0 &&
-    ((outcome! > 0 && props.address === attackerId) ||
-      (outcome! < 0 && props.address === attackeeId))
+    ((outcome! > 0 && address === attackerId) ||
+      (outcome! < 0 && address === attackeeId))
 
   const borderClassName =
     outcome === 0
@@ -24,29 +27,33 @@ export const HistoryItem = (props: {
     <div
       className={`flex flex-col font-mono text-xs border-2 p-4 rounded-md ${borderClassName}`}
     >
-      <div className="flex flex-col justify-between font-sans text-base gap-y-6">
-        {(props.address === attackerId || props.challenge.reveal === 1) && (
+      <div
+        className={`flex ${
+          attackerId === address ? 'flex-col-reverse' : 'flex-col'
+        } justify-between font-sans text-base gap-y-6`}
+      >
+        {(address === attackerId || challenge.reveal === 1) && (
           <Hand
-            flip
+            className={attackerId !== address ? 'flex-col-reverse' : 'flex-col'}
             address={attackerId}
             wager={wager}
             hand={attackerHand}
             otherHand={attackeeHand!}
-            outcome={typeof outcome === 'number' ? outcome : 0}
-            isOwner={attackerId === props.address}
+            isWinner={outcome! > 0}
+            isDraw={outcome! === 0}
           />
         )}
-        {(props.address === attackeeId ||
-          props.address === attackerId ||
-          props.challenge.reveal === 1) && (
+        {(address === attackeeId ||
+          address === attackerId ||
+          challenge.reveal === 1) && (
           <Hand
-            flip={false}
+            className={attackerId === address ? 'flex-col-reverse' : 'flex-col'}
             address={attackeeId}
             wager={wager}
             hand={attackeeHand!}
             otherHand={attackerHand}
-            outcome={typeof outcome === 'number' ? outcome : 0}
-            isOwner={attackeeId === props.address}
+            isWinner={outcome! < 0}
+            isDraw={outcome! === 0}
           />
         )}
       </div>

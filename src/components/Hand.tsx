@@ -1,33 +1,25 @@
 import { formatAddress } from '@/utils'
+import { useAccount } from 'wagmi'
 import { ICONS } from './Icons'
 
 export const Hand = (props: {
   hand: string
+  className?: string
   otherHand?: string
   address?: string
-  flip?: boolean
-  isOwner?: boolean
-  outcome?: number
+  isWinner?: boolean
+  isDraw?: boolean
   wager?: number
 }) => {
-  const isWinner = props.outcome
-    ? props.flip
-      ? props.outcome > 0
-      : props.outcome < 0
-    : false
-  const isDraw = props.outcome === 0
-  const className = isDraw
+  const { address: _address } = useAccount()
+  const className = props.isDraw
     ? 'text-gray-500'
-    : isWinner
+    : props.isWinner
     ? 'text-green-500'
     : 'text-red-500'
 
   return (
-    <div
-      className={`flex items-center gap-y-2 ${
-        props.flip ? 'flex-col-reverse' : 'flex-col'
-      }`}
-    >
+    <div className={`flex items-center gap-y-2 ${props.className}`}>
       <div className="flex flex-1 w-full h-12 justify-evenly">
         {props.hand?.split(',').map((c: any, i: number) => {
           const Component = ICONS[+c]
@@ -50,15 +42,15 @@ export const Hand = (props: {
       {props.address && (
         <span
           className={[
-            props.isOwner ? 'font-extrabold' : 'font-extralight',
+            _address === props.address ? 'font-extrabold' : 'font-extralight',
             className,
           ].join(' ')}
         >
           {formatAddress(props.address)}{' '}
           {props.wager ? (
             <span className={className}>
-              {isDraw ? '' : isWinner ? '+' : '-'}
-              {isDraw ? 0 : props.wager}
+              {props.isDraw ? '' : props.isWinner ? '+' : '-'}
+              {props.isDraw ? 0 : props.wager}
             </span>
           ) : null}
         </span>
