@@ -344,6 +344,51 @@ export const BlankIcon = ({
     </defs>
   </svg>
 )
+export const HiddenIcon = ({
+  className,
+  width = 150,
+  height = 150,
+}: IconProps) => (
+  <svg
+    width={width}
+    height={height}
+    className={className}
+    viewBox="0 0 500 500"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g clipPath="url(#clip0_10_5)">
+      <circle cx="250" cy="250" r="250" fill="url(#paint0_radial_10_5)" />
+      <circle
+        cx="250"
+        cy="250"
+        r="250"
+        fill="black"
+        fillOpacity="0.7"
+        style={{ mixBlendMode: 'darken' }}
+      />
+    </g>
+    <defs>
+      <radialGradient
+        id="paint0_radial_10_5"
+        cx="0"
+        cy="0"
+        r="1"
+        gradientUnits="userSpaceOnUse"
+        gradientTransform="translate(385 145) rotate(136.494) scale(406.725)"
+      >
+        <stop stopColor="white" />
+        <stop offset="0.0729167" stopColor="#B9B9B9" />
+        <stop offset="0.552083" stopColor="#6A6A6A" />
+        <stop offset="0.859375" stopColor="#474747" />
+        <stop offset="1" stopColor="#707070" />
+      </radialGradient>
+      <clipPath id="clip0_10_5">
+        <rect width="500" height="500" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+)
 
 export const Icons = () => (
   <div className="flex gap-x-4">
@@ -374,4 +419,11 @@ export const Icon = (props: {
   )
 }
 
-export const ICONS = [FireIcon, MetalIcon, PlantIcon, GroundIcon, WaterIcon]
+export const ICONS = [
+  FireIcon,
+  MetalIcon,
+  PlantIcon,
+  GroundIcon,
+  WaterIcon,
+  HiddenIcon,
+]

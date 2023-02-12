@@ -66,6 +66,11 @@ const ChallengeActions = (props: Props) => {
 
   const canAfford = balance >= wager
 
+  const weWon =
+    outcome !== 0 &&
+    ((outcome! > 0 && address === attackerId) ||
+      (outcome! < 0 && address === attackeeId))
+
   return (
     <div className="flex gap-4">
       {typeof outcome !== 'number' ? (
@@ -83,7 +88,7 @@ const ChallengeActions = (props: Props) => {
         address === attackerId ? (
           typeof reveal !== 'number' ? (
             <>
-              <button onClick={onFold}>Fold</button>
+              {!weWon && <button onClick={onFold}>Fold</button>}
               <button onClick={onReveal}>Show</button>
             </>
           ) : (
@@ -135,7 +140,7 @@ const ChallengeItem = ({
         hidden={
           address !== attackerId &&
           address === attackeeId &&
-          challenge.reveal !== 1
+          typeof challenge.reveal !== 'number'
         }
         showOutcome={isFinished}
         hand={attackerHand}
