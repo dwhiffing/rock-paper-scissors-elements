@@ -11,9 +11,7 @@ export const createChallenge = async (
   if (await getActiveChallenge(attackerId, attackeeId))
     throw new Error('Challenge already exists')
 
-  // deduct wager from attacker balance
-  const data = { balance: { decrement: wager } }
-  await prisma.player.update({ where: { address: attackerId }, data })
+  await adjustBalance(attackerId, -wager)
 
   return prisma.challenge.create({
     data: {
@@ -34,20 +32,12 @@ export const respondToChallenge = async (
   challenge: Challenge,
   attackeeHand: any,
 ) => {
-  const { attackerId, attackeeId, wager } = challenge
+  const { attackeeId, wager } = challenge
   const attackerHand = challenge.attackerHand.split(',').map(Number)
 
   await adjustBalance(attackeeId, -wager)
 
   const outcome = getOutcome(attackerHand, attackeeHand)
-  if (outcome === 0) {
-    await adjustBalance(attackerId, wager)
-    await adjustBalance(attackeeId, wager)
-  } else if (outcome > 0) {
-    await adjustBalance(attackerId, wager * 2)
-  } else {
-    await adjustBalance(attackeeId, wager * 2)
-  }
 
   await prisma.challenge.update({
     where: { id: challenge.id },
@@ -68,10 +58,24 @@ export const finalizeChallenge = async (
   challenge: Challenge,
   reveal: number,
 ) => {
-  await prisma.challenge.update({
-    where: { id: challenge.id },
-    data: { reveal },
-  })
+  const { id, attackeeId, attackerId, outcome, wager } = challenge
+
+  await prisma.challenge.update({ where: { id }, data: { reveal } })
+
+  // if attacker folded
+  if (!reveal) {
+    const data = { outcome: -1, attackerHand: '5,5,5,5,5', reveal }
+    await prisma.challenge.update({ where: { id }, data })
+  }
+
+  if (outcome === 0) {
+    await adjustBalance(attackerId, wager)
+    await adjustBalance(attackeeId, wager)
+  } else if (outcome! > 0) {
+    await adjustBalance(attackerId, wager * 2)
+  } else {
+    await adjustBalance(attackeeId, wager * 2)
+  }
 }
 
 export const touchOrCreatePlayer = async (address: string) => {
@@ -121,8 +125,19 @@ const getOutcome = (attackerHand: number[], attackeeHand: number[]) => {
   return outcome
 }
 
-const adjustBalance = (address: string, increment: number) =>
-  prisma.player.update({ where: { address }, data: { balance: { increment } } })
+const adjustBalance = async (address: string, value: number) => {
+  if (value > 0) {
+    await prisma.player.update({
+      where: { address },
+      data: { balance: { increment: Math.abs(value) } },
+    })
+  } else {
+    await prisma.player.update({
+      where: { address },
+      data: { balance: { decrement: Math.abs(value) } },
+    })
+  }
+}
 
 const getActiveChallenge = async (attackerId: string, attackeeId: string) => {
   const attackerChallenge = await prisma.challenge.findFirst({
