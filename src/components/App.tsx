@@ -48,27 +48,23 @@ export const App = () => {
   })
 
   const activeChallenges = ourChallenges.filter(
-    (c) =>
-      typeof c.outcome !== 'number' ||
-      typeof c.reveal !== 'number' ||
-      !c.attackerSeenOutcomeAt ||
-      !c.attackeeSeenOutcomeAt,
+    (c) => typeof c.outcome !== 'number' || typeof c.reveal !== 'number',
   )
 
   const pastChallenges = ourChallenges.filter(
     (c) => !activeChallenges.includes(c),
   )
 
-  const onReveal = (c: Challenge) => {
+  const onView = (c: Challenge) => {
     utils.view(c.id, address).then(() => refetch())
   }
 
-  const onRevealAttackerHand = (id: number, reveal: number) => {
-    utils.reveal(id, reveal).then(() => refetch())
+  const onFinalizeHand = (id: number, reveal: number) => {
+    utils.finalize(id, reveal).then(() => refetch())
     setAttackee('')
   }
-  const onShow = (c: Challenge) => onRevealAttackerHand(c.id, 1)
-  const onHide = (c: Challenge) => onRevealAttackerHand(c.id, -1)
+  const onReveal = (c: Challenge) => onFinalizeHand(c.id, 1)
+  const onFold = (c: Challenge) => onFinalizeHand(c.id, -1)
 
   const onSubmitAttack = (hand: number[], wager: number) => {
     if (isResponse) {
@@ -114,10 +110,10 @@ export const App = () => {
             balance={balance}
             key={c.id}
             onAccept={() => onAccept(c)}
-            onHide={() => onHide(c)}
-            onShow={() => onShow(c)}
-            onReject={() => onReject(c)}
+            onFold={() => onFold(c)}
             onReveal={() => onReveal(c)}
+            onReject={() => onReject(c)}
+            onView={() => onView(c)}
           />
         ))}
       </div>

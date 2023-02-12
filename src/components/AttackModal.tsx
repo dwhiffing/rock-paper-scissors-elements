@@ -112,7 +112,7 @@ export const AttackModal = (props: {
         <div className="flex gap-x-2">
           {new Array(5).fill('').map((_, i) => (
             <button
-              className="w-[20%] px-0 py-0 bg-transparent border-4 border-gray-300 rounded-full"
+              className="w-[20%] px-0 py-0 bg-transparent border-4 border-gray-300 rounded-full hover:opacity-70"
               key={i}
               onClick={() => {
                 inputsRef.current[indexRef.current].value = `${i + 1}`

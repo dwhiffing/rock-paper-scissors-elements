@@ -8,19 +8,15 @@ interface Props {
   address: string
   challenge: Challenge
   onAccept: () => void
-  onHide: () => void
-  onShow: () => void
+  onFold: () => void
   onReveal: () => void
+  onView: () => void
   onReject: () => void
 }
 
 export const ActiveChallengeItem = (props: Props) => (
   <div className="flex flex-col justify-between gap-4 border-gray-600 border-2 p-4 rounded-md">
-    <div className="flex flex-col gap-y-6 justify-between">
-      <p className="text-center">wager: {props.challenge.wager}</p>
-
-      <ChallengeItem address={props.address} challenge={props.challenge} />
-    </div>
+    <ChallengeItem address={props.address} challenge={props.challenge} />
 
     <ChallengeActions {...props} />
   </div>
@@ -33,8 +29,7 @@ export const PastChallengeItem = ({
   address: string
   challenge: Challenge
 }) => {
-  const { outcome, attackeeId, attackerId, attackerHand, attackeeHand, wager } =
-    challenge
+  const { outcome, attackeeId, attackerId } = challenge
 
   const weWon =
     outcome !== 0 &&
@@ -58,7 +53,7 @@ export const PastChallengeItem = ({
 }
 
 const ChallengeActions = (props: Props) => {
-  const { address, balance, onAccept, onReject, onHide, onReveal, onShow } =
+  const { address, balance, onAccept, onReject, onFold, onReveal, onView } =
     props
   const {
     attackerId,
@@ -88,17 +83,15 @@ const ChallengeActions = (props: Props) => {
         address === attackerId ? (
           typeof reveal !== 'number' ? (
             <>
-              <button onClick={onHide}>hide</button>
-              <button onClick={onShow}>show</button>
+              <button onClick={onFold}>Fold</button>
+              <button onClick={onReveal}>Show</button>
             </>
           ) : (
             <span>waiting for response</span>
           )
-        ) : typeof reveal !== 'number' ? null : (
-          <button onClick={onReveal}>Reveal</button>
-        )
+        ) : null
       ) : address === attackerId ? (
-        <button onClick={onReveal}>Reveal</button>
+        <button onClick={onView}>Reveal</button>
       ) : (
         <span>waiting for response</span>
       )}
@@ -121,12 +114,13 @@ const ChallengeItem = ({
     attackeeHand,
     wager,
     attackerSeenOutcomeAt,
-    attackeeSeenOutcomeAt,
+    reveal,
   } = challenge
 
   const isFinished =
     typeof outcome === 'number' &&
-    !!(address === attackerId ? attackerSeenOutcomeAt : attackeeSeenOutcomeAt)
+    (!!(attackerId === address && attackerSeenOutcomeAt) ||
+      typeof reveal === 'number')
 
   return (
     <div
@@ -137,11 +131,11 @@ const ChallengeItem = ({
       <Hand
         className={attackerId !== address ? 'flex-col-reverse' : 'flex-col'}
         address={attackerId}
-        wager={isFinished ? wager : undefined}
+        wager={wager}
         hidden={
           address !== attackerId &&
           address === attackeeId &&
-          (!attackeeSeenOutcomeAt || challenge.reveal !== 1)
+          challenge.reveal !== 1
         }
         showOutcome={isFinished}
         hand={attackerHand}
@@ -155,7 +149,7 @@ const ChallengeItem = ({
         address={attackeeId}
         hidden={address !== attackeeId && !attackerSeenOutcomeAt}
         showOutcome={isFinished}
-        wager={isFinished ? wager : undefined}
+        wager={wager}
         hand={attackeeHand || '-1,-1,-1,-1,-1'}
         otherHand={attackerHand}
         isWinner={outcome! < 0}
@@ -177,7 +171,7 @@ const Hand = (props: {
   wager?: number
 }) => {
   const { address: _address } = useAccount()
-  const className = props.wager
+  const className = props.showOutcome
     ? props.isDraw
       ? 'text-gray-500'
       : props.isWinner
@@ -212,7 +206,7 @@ const Hand = (props: {
           ].join(' ')}
         >
           {formatAddress(props.address)}{' '}
-          {props.wager ? (
+          {props.showOutcome ? (
             <span className={className}>
               {props.isDraw ? '' : props.isWinner ? '+' : '-'}
               {props.isDraw ? 0 : props.wager}

@@ -61,15 +61,13 @@ export const viewChallenge = async (challenge: Challenge, address: string) => {
       where: { id: challenge.id },
       data: { attackerSeenOutcomeAt: new Date() },
     })
-  } else if (address === challenge.attackeeId) {
-    await prisma.challenge.update({
-      where: { id: challenge.id },
-      data: { attackeeSeenOutcomeAt: new Date() },
-    })
   }
 }
 
-export const revealChallenge = async (challenge: Challenge, reveal: number) => {
+export const finalizeChallenge = async (
+  challenge: Challenge,
+  reveal: number,
+) => {
   await prisma.challenge.update({
     where: { id: challenge.id },
     data: { reveal },

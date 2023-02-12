@@ -27,7 +27,6 @@ model Challenge {
   attackerHand          String
   wager                 Int
   attackerSeenOutcomeAt DateTime?
-  attackeeSeenOutcomeAt DateTime?
   attackeeHand          String?
   outcome               Int?
   reveal                Int?

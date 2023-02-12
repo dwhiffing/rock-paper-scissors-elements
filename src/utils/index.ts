@@ -6,7 +6,8 @@ export const getChallengeExists = (
   b: string,
 ) =>
   challenges?.some((c) => {
-    if (typeof c.outcome === 'number') return false
+    if (typeof c.outcome === 'number' && typeof c.reveal === 'number')
+      return false
 
     const { attackerId: _a, attackeeId: _b } = c
     return (_b === a && _a === b) || (_a === a && _b === b)

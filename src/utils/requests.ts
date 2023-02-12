@@ -23,8 +23,8 @@ export const view = (id: number, address: string) =>
     body: JSON.stringify({ id, address }),
   })
 
-export const reveal = (id: number, reveal: number) =>
-  fetch('/api/reveal', {
+export const finalize = (id: number, reveal: number) =>
+  fetch('/api/finalize', {
     method: 'POST',
     body: JSON.stringify({ id, reveal }),
   })
