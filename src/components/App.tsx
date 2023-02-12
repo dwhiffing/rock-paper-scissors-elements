@@ -1,13 +1,13 @@
+import { ConnectKitButton } from 'connectkit'
 import { useEffect, useState } from 'react'
 import { Challenge } from '@prisma/client'
-import useSWR from 'swr'
-import { PlayerItem } from './PlayerItem'
-import { ChallengeItem } from './ChallengeItem'
-import { AttackModal } from './AttackModal'
-import * as utils from '@/utils'
-import { HistoryItem } from './HistoryItem'
 import { useAccount } from 'wagmi'
-import { ConnectKitButton } from 'connectkit'
+import useSWR from 'swr'
+
+import { ActiveChallengeItem, PastChallengeItem } from './ChallengeItem'
+import { AttackModal } from './AttackModal'
+import { PlayerItem } from './PlayerItem'
+import * as utils from '@/utils'
 
 export const App = () => {
   const [attackee, setAttackee] = useState('')
@@ -100,7 +100,7 @@ export const App = () => {
       <p className="font-bold">Challenges</p>
       <div className="flex flex-col gap-1">
         {activeChallenges.map((c) => (
-          <ChallengeItem
+          <ActiveChallengeItem
             challenge={c}
             address={address}
             balance={balance}
@@ -116,7 +116,7 @@ export const App = () => {
       <p className="font-bold">History</p>
       <div className="flex flex-col gap-4">
         {pastChallenges.map((challenge) => (
-          <HistoryItem
+          <PastChallengeItem
             key={challenge.id}
             address={address}
             challenge={challenge}
