@@ -32,6 +32,13 @@ export default async function handler(
 
   if (!attackeeHand) {
     await prisma.challenge.delete({ where: { id } })
+
+    let attackerBalance = attacker?.balance || 0
+    await prisma.player.update({
+      where: { address: challenge.attackerId },
+      data: { balance: attackerBalance + challenge.wager },
+    })
+
     return res.status(200).json({ message: 'Reject' })
   }
 
