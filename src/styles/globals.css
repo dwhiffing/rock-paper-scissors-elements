@@ -26,8 +26,8 @@ a {
 }
 
 button {
-  @apply bg-white text-black px-4 rounded-sm;
+  @apply bg-gray-200 text-black px-4 rounded-sm;
 }
 button:disabled {
-  @apply bg-gray-300 text-gray-400;
+  @apply bg-gray-400 text-gray-500;
 }
